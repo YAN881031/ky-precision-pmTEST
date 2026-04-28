@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鎧越精密 — 生產管理系統 v5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+:root{
+  --bg:#0f1110;--sf:#181a17;--sf2:#1f211d;--sf3:#272a24;
+  --bd:#2a2d27;--bd2:#383d32;
+  --tx:#e4e6d0;--tx2:#848a78;--tx3:#4e5447;
+  --ac:#8fbc5a;--ac2:#6a9040;--ac3:#1d2e10;
+  --gn:#5fa832;--gbg:#162910;
+  --am:#c8941a;--abg:#2a1e06;
+  --rd:#cc4444;--rbg:#2a1010;
+  --bl:#5a9fbc;--bbg:#0c1e2a;
+  --pu:#9b7fcc;--pbg:#1e1630;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Noto Sans TC',sans-serif;
+  --r:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--sf)}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 25% 25%,#162910 0%,var(--bg) 65%)}
+.lbox{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:2.25rem}
+.llogo{text-align:center;margin-bottom:1.75rem}
+.llogo .co{font-size:9px;letter-spacing:.2em;color:var(--tx3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px}
+.llogo h1{font-size:18px;font-weight:700;color:var(--tx);line-height:1.3}
+.llogo .ver{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:4px}
+.ldiv{height:1px;background:var(--bd);margin:1.25rem 0}
+.lf{margin-bottom:.85rem}
+.lf label{display:block;font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.35rem}
+.lf input{width:100%;padding:9px 11px;background:var(--sf2);border:1px solid var(--bd2);border-radius:6px;color:var(--tx);font-size:13px;transition:border-color .15s}
+.lf input:focus{outline:none;border-color:var(--ac2)}
+.lbtn{width:100%;padding:10px;background:var(--ac2);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;font-family:var(--sans)}
+.lbtn:hover{background:var(--ac)}
+.lerr{font-size:11px;color:var(--rd);margin-top:.6rem;text-align:center;display:none}
+.lhint{font-size:10px;color:var(--tx3);text-align:center;margin-top:1rem;font-family:var(--mono);line-height:2}
+
+/* APP */
+#app{display:none;grid-template-columns:210px 1fr;min-height:100vh}
+#app.v{display:grid}
+
+/* SIDEBAR */
+.sidebar{background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sh{padding:1rem .9rem .85rem;border-bottom:1px solid var(--bd)}
+.sh .co{font-size:9px;letter-spacing:.15em;color:var(--tx3);font-family:var(--mono);text-transform:uppercase;margin-bottom:3px}
+.sh .ti{font-size:12px;font-weight:500;color:var(--tx)}
+.ubadge{margin:.6rem .9rem;padding:.5rem .7rem;background:var(--sf2);border:1px solid var(--bd);border-radius:6px}
+.ubadge .un{font-size:12px;font-weight:500;color:var(--tx)}
+.ubadge .ur{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:1px}
+.nvsec{padding:.35rem 0;border-bottom:1px solid var(--bd)}
+.nvlbl{font-size:9px;letter-spacing:.12em;color:var(--tx3);text-transform:uppercase;padding:.4rem .9rem .2rem;font-family:var(--mono)}
+.nb{display:flex;align-items:center;gap:7px;width:100%;padding:.45rem .9rem;background:none;border:none;color:var(--tx2);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .12s;text-align:left}
+.nb:hover{background:var(--sf2);color:var(--tx)}
+.nb.active{background:var(--sf3);color:var(--ac);font-weight:500}
+.nb.off{opacity:.3;pointer-events:none}
+.nbi{font-size:12px;width:15px;text-align:center;flex-shrink:0}
+.pdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--am);margin-left:4px;vertical-align:middle}
+.sfooter{margin-top:auto;padding:.65rem .9rem;border-top:1px solid var(--bd)}
+.lout{width:100%;padding:5px;background:none;border:1px solid var(--bd);border-radius:5px;color:var(--tx3);font-size:11px;cursor:pointer;font-family:var(--sans);transition:all .12s}
+.lout:hover{border-color:var(--rd);color:var(--rd)}
+
+/* MAIN */
+.main{overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:1.75rem;max-width:1120px}
+.page.active{display:block}
+.ph{margin-bottom:1.25rem;padding-bottom:.85rem;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.ph-left h1{font-size:19px;font-weight:700;color:var(--tx)}
+.ph-left p{font-size:11px;color:var(--tx2);margin-top:3px;font-family:var(--mono)}
+
+/* CARDS */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1.1rem;margin-bottom:.85rem}
+.ct{font-size:9px;font-weight:500;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:.85rem}
+
+/* FORMS */
+.fr{display:grid;gap:8px;margin-bottom:8px}
+.r2{grid-template-columns:1fr 1fr}
+.r3{grid-template-columns:1fr 1fr 1fr}
+.r4{grid-template-columns:1fr 1fr 1fr 1fr}
+.r5{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
+.fd{display:flex;flex-direction:column;gap:3px}
+.fd label{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+input,select,textarea{font-size:13px;padding:6px 9px;border:1px solid var(--bd2);border-radius:5px;background:var(--sf2);color:var(--tx);font-family:var(--sans);width:100%;transition:border-color .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac2);background:var(--sf3)}
+input[type=number]{font-family:var(--mono)}
+select option{background:var(--sf2)}
+
+/* SHIFT */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.sblock{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:10px}
+.slbl{font-size:10px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.sdot{width:6px;height:6px;border-radius:50%}
+
+/* RATE PREVIEW */
+.rp{background:var(--sf3);border:1px solid var(--bd2);border-radius:5px;padding:8px 12px;margin-top:7px;display:none;flex-wrap:wrap;gap:14px;align-items:center}
+.rp.show{display:flex}
+.rpi{font-family:var(--mono);font-size:11px;color:var(--tx2)}
+.rpi b{color:var(--tx);font-weight:400}
+
+/* BUTTONS */
+.btn{padding:6px 13px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bd2);background:var(--sf2);color:var(--tx);font-family:var(--sans);transition:all .12s;white-space:nowrap}
+.btn:hover{background:var(--sf3)}
+.btn-p{background:var(--ac2);color:#fff;border-color:var(--ac2)}
+.btn-p:hover{background:var(--ac)}
+.btn-d{color:var(--rd);border-color:var(--rbg)}
+.btn-d:hover{background:var(--rbg)}
+.btn-e{background:var(--gbg);color:var(--ac);border-color:var(--bd)}
+.btn-e:hover{background:var(--sf3)}
+.btn-sm{padding:3px 8px;font-size:11px}
+.brow{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ACCORDION */
+.me{border:1px solid var(--bd);border-radius:var(--r);margin-bottom:7px;overflow:hidden}
+.meh{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--sf2);cursor:pointer;transition:background .12s}
+.meh:hover{background:var(--sf3)}
+.mename{font-size:12px;font-weight:500;color:var(--tx);display:flex;align-items:center;gap:7px}
+.mebody{padding:12px;display:none}
+.mebody.open{display:block}
+.chev{font-size:10px;color:var(--tx3);transition:transform .2s;display:inline-block}
+.chev.open{transform:rotate(90deg)}
+
+/* METRICS */
+.mrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px;margin-bottom:.85rem}
+.metric{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:10px}
+.mlbl{font-size:10px;color:var(--tx2);font-family:var(--mono);margin-bottom:3px}
+.mval{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
+.msub{font-size:10px;color:var(--tx3);margin-top:3px;font-family:var(--mono)}
+.g{color:var(--gn)}.w{color:var(--am)}.r{color:var(--rd)}.b{color:var(--bl)}
+
+/* DASHBOARD */
+.dash-big{background:var(--sf);border:1px solid var(--bd2);border-radius:10px;padding:1.25rem;text-align:center}
+.dash-big .dlbl{font-size:10px;color:var(--tx2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.dash-big .dval{font-size:44px;font-weight:700;font-family:var(--mono);line-height:1}
+.dash-big .dsub{font-size:10px;color:var(--tx3);font-family:var(--mono);margin-top:.35rem}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem;margin-bottom:.85rem}
+.dash-section{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:1rem}
+.dash-section-title{font-size:9px;color:var(--tx3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.dmr{display:flex;align-items:center;gap:8px;margin-bottom:7px;padding:6px 8px;background:var(--sf2);border-radius:5px}
+.dmr:last-child{margin-bottom:0}
+.dmr-name{font-size:11px;font-weight:500;color:var(--tx);width:65px;flex-shrink:0;font-family:var(--mono)}
+.dmr-bar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.dmr-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.dmr-val{font-family:var(--mono);font-size:11px;min-width:42px;text-align:right}
+.dmr-prod{font-size:10px;color:var(--tx3);font-family:var(--sans);margin-left:4px;min-width:60px;overflow:hidden;text-overflow:ellipsis}
+
+/* TABLES */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--sf2);font-size:9px;font-weight:500;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;padding:7px 9px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap;font-family:var(--mono)}
+td{padding:7px 9px;border-bottom:1px solid var(--bd);color:var(--tx);font-family:var(--mono);font-size:12px;white-space:nowrap}
+tr:hover td{background:var(--sf2)}
+.ts{font-family:var(--sans);font-size:12px}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;font-family:var(--mono)}
+.bg2{background:var(--gbg);color:var(--ac)}
+.bw2{background:var(--abg);color:var(--am)}
+.br2{background:var(--rbg);color:var(--rd)}
+.bb2{background:var(--bbg);color:var(--bl)}
+.type-lathe{background:var(--pbg);color:var(--pu);font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+.type-mill{background:var(--bbg);color:var(--bl);font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+
+/* BAR */
+.bar-track{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+
+/* TOOL WARN */
+.tool-warn{display:flex;align-items:center;gap:8px;background:var(--abg);border:1px solid rgba(200,148,26,.2);border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px;color:var(--am)}
+.tool-crit{background:var(--rbg);border-color:rgba(204,68,68,.2);color:var(--rd)}
+
+/* PDF */
+.pdf-drop{border:2px dashed var(--bd2);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:.85rem;background:var(--sf2)}
+.pdf-drop:hover,.pdf-drop.drag{border-color:var(--ac2);background:var(--ac3)}
+.pdf-drop .di{font-size:1.5rem;display:block;margin-bottom:.35rem}
+.pdf-drop p{font-size:12px;color:var(--tx2)}
+.pdf-drop small{font-size:10px;color:var(--tx3);font-family:var(--mono)}
+.pdf-st{font-size:11px;font-family:var(--mono);padding:7px 11px;border-radius:5px;margin-bottom:.85rem;display:none}
+.pdf-st.loading{background:var(--bbg);color:var(--bl);display:block}
+.pdf-st.ok{background:var(--gbg);color:var(--ac);display:block}
+.pdf-st.err{background:var(--rbg);color:var(--rd);display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
+
+/* RECORDS */
+.rec-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)}
+.rec-item:last-child{border-bottom:none}
+.rec-date{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--tx)}
+.rec-meta{font-family:var(--mono);font-size:10px;color:var(--tx3);margin-top:2px}
+
+/* DNAV */
+.dnav{display:flex;align-items:center;gap:7px;margin-bottom:1rem;flex-wrap:wrap}
+.dnav select,.dnav input{width:auto;min-width:90px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.modal{background:var(--sf);border:1px solid var(--bd2);border-radius:10px;padding:1.75rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:.35rem}
+.modal .msub{font-size:11px;color:var(--tx2);margin-bottom:1rem;font-family:var(--mono)}
+.mwarn{display:flex;align-items:flex-start;gap:8px;background:var(--rbg);border:1px solid rgba(204,68,68,.2);border-radius:6px;padding:10px;margin-bottom:.85rem}
+.mwarn p{font-size:12px;color:var(--rd);line-height:1.5}
+.modal textarea{resize:vertical;min-height:80px}
+.mbtns{display:flex;gap:7px;justify-content:flex-end;margin-top:.85rem}
+
+/* PRODUCT MODAL */
+.pmodal{max-width:720px}
+.tool-grid-hdr{display:grid;grid-template-columns:55px 1fr 1fr 70px 60px 70px 80px 32px;gap:5px;padding:0 0 6px;border-bottom:1px solid var(--bd);margin-bottom:6px}
+.tool-grid-row{display:grid;grid-template-columns:55px 1fr 1fr 70px 60px 70px 80px 32px;gap:5px;align-items:center;margin-bottom:5px}
+.thdr{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;font-family:var(--mono)}
+
+/* PRODUCT CARD */
+.prod-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-bottom:.75rem}
+.prod-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem}
+.prod-name{font-size:14px;font-weight:500;color:var(--tx)}
+.prod-code{font-size:11px;color:var(--tx3);font-family:var(--mono);margin-top:2px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:1rem}
+.tab{padding:6px 14px;font-size:12px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans);transition:all .12s}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--ac);border-bottom-color:var(--ac);font-weight:500}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--sf3);border:1px solid var(--bd2);color:var(--tx);padding:9px 14px;border-radius:7px;font-size:11px;font-family:var(--mono);opacity:0;transform:translateY(7px);transition:all .2s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* EMPTY */
+.empty{text-align:center;padding:2.5rem;color:var(--tx3)}
+.empty .ei{font-size:1.75rem;display:block;margin-bottom:.4rem;opacity:.35}
+.empty p{font-size:11px;font-family:var(--mono)}
+
+.sdiv{height:1px;background:var(--bd);margin:.85rem 0}
+
+/* SETTINGS TABLE */
+.set-row{display:grid;grid-template-columns:80px 1fr 1fr 1fr 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.set-row:last-child{border-bottom:none}
+
+/* USER ROW */
+.urow{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bd)}
+.urow:last-child{border-bottom:none}
+
+@media(max-width:750px){
+  #app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .r2,.r3,.r4,.r5,.sgrid,.dash-grid,.tool-grid-hdr,.tool-grid-row,.set-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="co">Kai-Yue Precision Co., Ltd.</div>
+      <h1>鎧越精密<br>生產管理系統</h1>
+      <div class="ver">v5.0 — Production Management</div>
+    </div>
+    <div class="ldiv"></div>
+    <div class="lf"><label>帳號</label><input type="text" id="lu" placeholder="輸入帳號" autocomplete="username"></div>
+    <div class="lf"><label>密碼</label><input type="password" id="lp" placeholder="輸入密碼" autocomplete="current-password"></div>
+    <button class="lbtn" onclick="doLogin()">登入系統</button>
+    <div class="lerr" id="lerr">帳號或密碼錯誤</div>
+    <div class="lhint">admin / admin123　管理員<br>op1 / op1234　操作員<br>mgr / mgr123　主管</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="sh"><div class="co">Kai-Yue Precision</div><div class="ti">生產管理系統</div></div>
+    <div class="ubadge"><div class="un" id="s-uname">—</div><div class="ur" id="s-urole">—</div></div>
+    <div class="nvsec">
+      <div class="nvlbl">儀表板</div>
+      <button class="nb active" id="nb-dash" onclick="showPage('dash')"><span class="nbi">📊</span>當日總覽</button>
+    </div>
+    <div class="nvsec">
+      <div class="nvlbl">每日作業</div>
+      <button class="nb" id="nb-entry" onclick="showPage('entry')"><span class="nbi">📋</span>交班輸入</button>
+      <button class="nb" id="nb-records" onclick="showPage('records')"><span class="nbi">📁</span>歷史記錄</button>
+      <button class="nb" id="nb-pending" onclick="showPage('pending')"><span class="nbi">⏳</span>待審核<span class="pdot" id="pdot" style="display:none"></span></button>
+    </div>
+    <div class="nvsec">
+      <div class="nvlbl">主檔管理</div>
+      <button class="nb" id="nb-products" onclick="showPage('products')"><span class="nbi">📦</span>產品主檔</button>
+      <button class="nb" id="nb-tools" onclick="showPage('tools')"><span class="nbi">🔧</span>刀具狀態</button>
+    </div>
+    <div class="nvsec">
+      <div class="nvlbl">統計報表</div>
+      <button class="nb" id="nb-weekly" onclick="showPage('weekly')"><span class="nbi">📅</span>週報總表</button>
+      <button class="nb" id="nb-monthly" onclick="showPage('monthly')"><span class="nbi">📈</span>月報總表</button>
+    </div>
+    <div class="nvsec" id="admin-nav">
+      <div class="nvlbl">系統管理</div>
+      <button class="nb" id="nb-settings" onclick="showPage('settings')"><span class="nbi">🕐</span>機台時間設定</button>
+      <button class="nb" id="nb-users" onclick="showPage('users')"><span class="nbi">👥</span>帳號管理</button>
+      <button class="nb" onclick="exportAllCSV()"><span class="nbi">⬇</span>匯出 CSV</button>
+      <button class="nb" onclick="exportJSON()"><span class="nbi">💾</span>備份資料</button>
+      <button class="nb" onclick="importJSON()"><span class="nbi">⬆</span>匯入備份</button>
+    </div>
+    <div class="sfooter"><button class="lout" onclick="doLogout()">登出系統</button></div>
+  </nav>
+
+  <main class="main">
+
+    <!-- 當日總覽 -->
+    <div class="page active" id="page-dash">
+      <div class="ph">
+        <div class="ph-left"><h1>當日生產總覽</h1><p id="dash-date-lbl">—</p></div>
+        <div class="brow">
+          <input type="date" id="dash-date" onchange="renderDash()" style="width:auto">
+          <button class="btn btn-sm btn-e" onclick="exportDashCSV()">⬇ 今日報表</button>
+        </div>
+      </div>
+      <div id="dash-content"></div>
+    </div>
+
+    <!-- 交班輸入 -->
+    <div class="page" id="page-entry">
+      <div class="ph"><div class="ph-left"><h1>交班輸入</h1><p>選擇產品後系統自動帶入加工參數並計算稼動率</p></div></div>
+      <div class="card">
+        <div class="ct">PDF 自動帶入</div>
+        <div class="pdf-drop" id="pdf-drop" onclick="document.getElementById('pdf-inp').click()" ondragover="dragOver(event)" ondrop="doDrop(event)" ondragleave="this.classList.remove('drag')">
+          <span class="di">📄</span><p>點擊或拖曳交班報表 PDF</p><small>AI 自動解析並填入表單</small>
+        </div>
+        <input type="file" id="pdf-inp" accept=".pdf" style="display:none" onchange="handlePDF(event)">
+        <div class="pdf-st" id="pdf-st"></div>
+      </div>
+      <div class="card">
+        <div class="ct">基本資訊</div>
+        <div class="fr r3">
+          <div class="fd"><label>日期</label><input type="date" id="e-date"></div>
+          <div class="fd"><label>班別</label>
+            <select id="e-shift"><option value="both">早班＋晚班（全天）</option><option value="day">早班</option><option value="night">晚班</option></select>
+          </div>
+          <div class="fd"><label>備註</label><input type="text" id="e-note" placeholder="當日特殊狀況..."></div>
+        </div>
+      </div>
+      <div id="e-machines"></div>
+      <div class="brow" style="margin-bottom:.85rem">
+        <button class="btn" onclick="addMachineEntry()">＋ 新增機台</button>
+      </div>
+      <div class="brow">
+        <button class="btn btn-p" id="save-btn" onclick="trySave()">儲存記錄</button>
+        <button class="btn" onclick="clearEntryForm()">清除表單</button>
+      </div>
+    </div>
+
+    <!-- 歷史記錄 -->
+    <div class="page" id="page-records">
+      <div class="ph"><div class="ph-left"><h1>歷史記錄</h1><p>已核准的生產記錄</p></div></div>
+      <div class="card">
+        <div class="dnav">
+          <select id="rec-month" onchange="renderRecords()"><option value="">所有月份</option></select>
+          <select id="rec-type" onchange="renderRecords()">
+            <option value="">所有機型</option><option value="lathe">走心式車床</option><option value="mill">CNC銑床</option>
+          </select>
+        </div>
+        <div id="records-list"></div>
+      </div>
+    </div>
+
+    <!-- 待審核 -->
+    <div class="page" id="page-pending">
+      <div class="ph"><div class="ph-left"><h1>待審核記錄</h1><p>審核操作員提交的交班資料</p></div></div>
+      <div class="card"><div id="pending-list"></div></div>
+    </div>
+
+    <!-- 產品主檔 -->
+    <div class="page" id="page-products">
+      <div class="ph">
+        <div class="ph-left"><h1>產品主檔</h1><p>建立產品後才能在交班輸入中選取</p></div>
+        <button class="btn btn-p btn-sm" onclick="showProductModal()">＋ 新增產品</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="filterProducts('all',this)">全部</button>
+        <button class="tab" onclick="filterProducts('lathe',this)">走心式車床</button>
+        <button class="tab" onclick="filterProducts('mill',this)">CNC 銑床</button>
+      </div>
+      <div id="products-list"></div>
+    </div>
+
+    <!-- 刀具狀態 -->
+    <div class="page" id="page-tools">
+      <div class="ph"><div class="ph-left"><h1>刀具狀態</h1><p>各產品刀具剩餘壽命與警示</p></div></div>
+      <div id="tools-content"></div>
+    </div>
+
+    <!-- 週報 -->
+    <div class="page" id="page-weekly">
+      <div class="ph">
+        <div class="ph-left"><h1>週報總表</h1><p>選擇日期，自動找出該週</p></div>
+        <div class="brow">
+          <input type="date" id="week-date" onchange="renderWeekly()">
+          <button class="btn btn-sm btn-e" onclick="exportWeeklyCSV()">⬇ 週報 CSV</button>
+        </div>
+      </div>
+      <div id="weekly-content"></div>
+    </div>
+
+    <!-- 月報 -->
+    <div class="page" id="page-monthly">
+      <div class="ph">
+        <div class="ph-left"><h1>月報總表</h1><p>按月彙整各機台產能</p></div>
+        <div class="brow">
+          <select id="m-year" onchange="renderMonthly()"></select>
+          <select id="m-month" onchange="renderMonthly()"></select>
+          <button class="btn btn-sm btn-e" onclick="exportMonthlyCSV()">⬇ 月報 CSV</button>
+        </div>
+      </div>
+      <div id="monthly-content"></div>
+    </div>
+
+    <!-- 機台時間設定 -->
+    <div class="page" id="page-settings">
+      <div class="ph"><div class="ph-left"><h1>機台時間設定</h1><p>設定早/晚班工時供稼動率計算</p></div></div>
+      <div class="tabs">
+        <button class="tab active" id="tab-lathe" onclick="renderSettings('lathe',this)">走心式車床</button>
+        <button class="tab" id="tab-mill" onclick="renderSettings('mill',this)">CNC 銑床</button>
+      </div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:80px 1fr 1fr 1fr 1fr;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--bd);margin-bottom:8px">
+          <div class="thdr">機台</div><div class="thdr">早班工時(h)</div><div class="thdr">晚班工時(h)</div><div class="thdr">早班閾值(%)</div><div class="thdr">晚班閾值(%)</div>
+        </div>
+        <div id="settings-rows"></div>
+        <div class="brow" style="margin-top:.85rem"><button class="btn btn-p btn-sm" onclick="saveSettings()">儲存設定</button></div>
+      </div>
+      <div class="card" style="background:var(--sf2)">
+        <div class="ct">計算說明</div>
+        <p style="font-size:11px;color:var(--tx2);line-height:2;font-family:var(--mono)">
+          理論最大產能 = 工時（分鐘）÷ 單件加工時間（分鐘）<br>
+          稼動率 = 實際產量（顆）÷ 理論最大產能 × 100%<br>
+          銑床：一模多顆，輸入顆數，系統換算模數<br>
+          低於閾值強制填寫稼動率低下原因
+        </p>
+      </div>
+    </div>
+
+    <!-- 帳號管理 -->
+    <div class="page" id="page-users">
+      <div class="ph"><div class="ph-left"><h1>帳號管理</h1></div></div>
+      <div class="card">
+        <div class="ct">新增帳號</div>
+        <div class="fr r4">
+          <div class="fd"><label>帳號</label><input id="nu" placeholder="帳號"></div>
+          <div class="fd"><label>密碼</label><input type="password" id="np" placeholder="密碼"></div>
+          <div class="fd"><label>姓名</label><input id="nn" placeholder="顯示名稱"></div>
+          <div class="fd"><label>角色</label><select id="nr"><option value="op">操作員</option><option value="mgr">主管</option><option value="admin">管理員</option></select></div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="addUser()">新增帳號</button>
+      </div>
+      <div class="card"><div class="ct">現有帳號</div><div id="users-list"></div></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- 稼動率低下 Modal -->
+<div class="modal-bg" id="rate-modal" style="display:none">
+  <div class="modal">
+    <h2>⚠️ 稼動率低下警告</h2>
+    <p class="msub">以下機台低於閾值，請填寫原因後才能儲存</p>
+    <div id="modal-warnings"></div>
+    <div class="fd" style="margin-top:.85rem">
+      <label>稼動率低下原因（必填）</label>
+      <textarea id="modal-reason" placeholder="請詳細說明原因（例：刀具磨耗、待料、程式調整...）"></textarea>
+    </div>
+    <div class="mbtns">
+      <button class="btn" onclick="closeModal()">取消，返回修改</button>
+      <button class="btn btn-p" onclick="confirmSave()">確認儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 產品 Modal -->
+<div class="modal-bg" id="product-modal" style="display:none">
+  <div class="modal pmodal">
+    <h2 id="pm-title">新增產品</h2>
+    <p class="msub">建立產品主檔後可在交班輸入中選取使用</p>
+    <div class="fr r3">
+      <div class="fd"><label>產品編號</label><input id="pm-code" placeholder="YL-12243-00"></div>
+      <div class="fd"><label>品名</label><input id="pm-name" placeholder="鋁件YL-12243-00"></div>
+      <div class="fd"><label>機台類型</label>
+        <select id="pm-type" onchange="onProdTypeChange()">
+          <option value="lathe">走心式車床</option>
+          <option value="mill">CNC 銑床</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr r4" style="margin-bottom:.5rem">
+      <div class="fd"><label>加工時間（分）</label><input type="number" id="pm-cm" placeholder="2" min="0"></div>
+      <div class="fd"><label>加工時間（秒）</label><input type="number" id="pm-cs" placeholder="28" min="0" max="59"></div>
+      <div class="fd" id="pm-mold-wrap"><label>一模幾顆（銑床）</label><input type="number" id="pm-mold" placeholder="16" min="1" value="1"></div>
+      <div class="fd"><label>機型 / 型號</label><input id="pm-model" placeholder="星辰-L32"></div>
+    </div>
+    <div class="sdiv"></div>
+    <div class="ct">刀具清單</div>
+    <div class="tool-grid-hdr">
+      <div class="thdr">刀號</div><div class="thdr">刀具品名</div><div class="thdr">刀具產編</div>
+      <div class="thdr">壽命(面)</div><div class="thdr">可用面</div>
+      <div class="thdr">價格(元)</div><div class="thdr">單件消耗</div><div></div>
+    </div>
+    <div id="pm-tools"></div>
+    <button class="btn btn-sm" onclick="addToolRow()" style="margin-bottom:.85rem">＋ 新增刀具</button>
+    <div class="mbtns">
+      <button class="btn" onclick="closeProdModal()">取消</button>
+      <button class="btn btn-p" onclick="saveProduct()">儲存產品</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ═══════════════════ DB ═══════════════════
+const DB_KEY='kaiyue_v5';
+function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||initDB();}catch{return initDB();}}
+function saveDB(db){localStorage.setItem(DB_KEY,JSON.stringify(db));}
+function initDB(){
+  const db={
+    users:[
+      {id:1,username:'admin',password:'admin123',name:'管理員',role:'admin'},
+      {id:2,username:'op1',password:'op1234',name:'操作員一',role:'op'},
+      {id:3,username:'op2',password:'op2345',name:'操作員二',role:'op'},
+      {id:4,username:'mgr',password:'mgr123',name:'主管',role:'mgr'},
+      {id:5,username:'op3',password:'op3456',name:'操作員三',role:'op'},
+    ],
+    records:[],pending:[],products:[],machineSettings:{}
+  };
+  for(let i=1;i<=5;i++) db.machineSettings['lathe_'+i]={dayHours:9,nightHours:11,dayThreshold:85,nightThreshold:85};
+  for(let i=1;i<=8;i++) db.machineSettings['mill_'+i]={dayHours:9,nightHours:11,dayThreshold:85,nightThreshold:85};
+  saveDB(db);return db;
+}
+function getMSet(type,num){const db=loadDB();return db.machineSettings[type+'_'+num]||{dayHours:9,nightHours:11,dayThreshold:85,nightThreshold:85};}
+
+// ═══════════════════ CALC ═══════════════════
+function calcMaxCap(hours,cm,cs){const s=cm*60+cs;if(!s)return null;return Math.floor(hours*3600/s);}
+function calcRate(qty,cap){if(!cap||cap<=0)return null;return +(qty/cap*100).toFixed(1);}
+function rateColor(r){return r===null?'#5a9fbc':r>=100?'#5fa832':r>=85?'#5a9fbc':r>=70?'#c8941a':'#cc4444';}
+function rb(r){if(r===null)return'<span class="badge bb2">—</span>';const c=r>=100?'bg2':r>=85?'bb2':r>=70?'bw2':'br2';return`<span class="badge ${c}">${r}%</span>`;}
+function rcls(r){return r===null?'b':r>=100?'g':r>=85?'b':'r';}
+
+// ═══════════════════ AUTH ═══════════════════
+let CU=null;
+function doLogin(){
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  const user=loadDB().users.find(x=>x.username===u&&x.password===p);
+  if(!user){document.getElementById('lerr').style.display='block';return;}
+  CU=user;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('v');
+  document.getElementById('s-uname').textContent=user.name;
+  document.getElementById('s-urole').textContent=roleLabel(user.role);
+  applyPerms();initApp();
+}
+function doLogout(){CU=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').classList.remove('v');document.getElementById('lu').value='';document.getElementById('lp').value='';document.getElementById('lerr').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')doLogin();});
+function roleLabel(r){return r==='admin'?'管理員':r==='mgr'?'主管':'操作員';}
+function applyPerms(){
+  document.getElementById('admin-nav').style.display=CU.role==='admin'?'block':'none';
+  if(CU.role==='mgr')document.getElementById('save-btn').disabled=true;
+  if(CU.role==='op')document.getElementById('nb-pending').classList.add('off');
+}
+
+// ═══════════════════ NAV ═══════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
+  const nb=document.getElementById('nb-'+id);if(nb)nb.classList.add('active');
+  if(id==='dash')renderDash();
+  if(id==='records')renderRecords();
+  if(id==='pending')renderPending();
+  if(id==='products')renderProducts('all');
+  if(id==='tools')renderTools();
+  if(id==='weekly')renderWeekly();
+  if(id==='monthly')renderMonthly();
+  if(id==='settings')renderSettings('lathe');
+  if(id==='users')renderUsers();
+}
+function toast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function gn(id){const v=parseFloat(gv(id));return isNaN(v)?0:v;}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+
+// ═══════════════════ INIT ═══════════════════
+function initApp(){
+  document.getElementById('e-date').value=todayStr();
+  document.getElementById('dash-date').value=todayStr();
+  document.getElementById('week-date').value=todayStr();
+  if(!document.querySelector('.me'))addMachineEntry();
+  initMonthSelects();updatePdot();renderDash();
+}
+
+// ═══════════════════ DASHBOARD ═══════════════════
+function renderDash(){
+  const date=gv('dash-date')||todayStr();
+  document.getElementById('dash-date-lbl').textContent=date+' 生產狀況';
+  const db=loadDB();
+  const recs=db.records.filter(r=>r.date===date);
+  const el=document.getElementById('dash-content');
+  if(!recs.length){el.innerHTML=`<div class="card"><div class="empty"><span class="ei">📊</span><p>${date} 尚無生產記錄</p></div></div>`;return;}
+
+  const allM=[];recs.forEach(r=>r.machines.forEach(m=>allM.push(m)));
+  const latheM=allM.filter(m=>m.machineType==='lathe');
+  const millM=allM.filter(m=>m.machineType==='mill');
+
+  function grpRate(ms){
+    const tq=ms.reduce((s,m)=>s+m.total,0);
+    const tc=ms.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+    return{tq,tc,rate:tc>0?+(tq/tc*100).toFixed(1):null,count:ms.length};
+  }
+  const lS=grpRate(latheM),mS=grpRate(millM),aS=grpRate(allM);
+
+  // Tool warnings
+  const warns=[];
+  (db.products||[]).forEach(p=>(p.tools||[]).forEach(t=>{
+    const rem=t.currentFaces!=null?t.currentFaces:t.faces;
+    const thr=Math.ceil(t.faces*0.15);
+    if(rem<=thr)warns.push({prod:p.name,tnum:t.num,tool:t.name,rem,faces:t.faces,crit:rem<=0});
+  }));
+
+  el.innerHTML=`
+  <div class="dash-grid">
+    <div class="dash-big">
+      <div class="dlbl">🏭 公司總稼動率</div>
+      <div class="dval ${rcls(aS.rate)}">${aS.rate!==null?aS.rate+'%':'—'}</div>
+      <div class="dsub">實際 ${aS.tq.toLocaleString()} ／ 理論 ${aS.tc.toLocaleString()} 顆</div>
+    </div>
+    <div class="dash-big">
+      <div class="dlbl"><span class="type-lathe">走心</span> 車床稼動率</div>
+      <div class="dval ${rcls(lS.rate)}">${lS.rate!==null?lS.rate+'%':'—'}</div>
+      <div class="dsub">${lS.count} 台　${lS.tq.toLocaleString()} 顆</div>
+    </div>
+    <div class="dash-big">
+      <div class="dlbl"><span class="type-mill">銑床</span> CNC稼動率</div>
+      <div class="dval ${rcls(mS.rate)}">${mS.rate!==null?mS.rate+'%':'—'}</div>
+      <div class="dsub">${mS.count} 台　${mS.tq.toLocaleString()} 顆</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem">
+    <div class="dash-section">
+      <div class="dash-section-title"><span class="type-lathe">走心</span>各機台</div>
+      ${latheM.length?latheM.map(m=>`<div class="dmr">
+        <div class="dmr-name">${m.machineNum}號機</div>
+        <div class="dmr-bar"><div class="dmr-fill" style="width:${Math.min(m.overallRate||0,100)}%;background:${rateColor(m.overallRate)}"></div></div>
+        <div class="dmr-val" style="color:${rateColor(m.overallRate)}">${m.overallRate!==null?m.overallRate+'%':'—'}</div>
+        <div class="dmr-prod">${m.prod||''}</div>
+      </div>`).join(''):`<div class="empty" style="padding:1rem"><span class="ei">🏭</span><p>今日無記錄</p></div>`}
+    </div>
+    <div class="dash-section">
+      <div class="dash-section-title"><span class="type-mill">銑床</span>各機台</div>
+      ${millM.length?millM.map(m=>`<div class="dmr">
+        <div class="dmr-name">${m.machineNum}號機</div>
+        <div class="dmr-bar"><div class="dmr-fill" style="width:${Math.min(m.overallRate||0,100)}%;background:${rateColor(m.overallRate)}"></div></div>
+        <div class="dmr-val" style="color:${rateColor(m.overallRate)}">${m.overallRate!==null?m.overallRate+'%':'—'}</div>
+        <div class="dmr-prod">${m.prod||''}</div>
+      </div>`).join(''):`<div class="empty" style="padding:1rem"><span class="ei">🏭</span><p>今日無記錄</p></div>`}
+    </div>
+  </div>
+
+  ${warns.length?`<div class="card"><div class="ct">⚠ 刀具壽命警示</div>${warns.map(w=>`
+    <div class="tool-warn ${w.crit?'tool-crit':''}">
+      ${w.crit?'🔴':'🟡'} <strong>${w.prod}</strong> — ${w.tnum} ${w.tool}　剩餘 <strong>${w.rem}</strong>／${w.faces} 面
+    </div>`).join('')}</div>`:''}
+
+  <div class="card"><div class="ct">今日交班記錄</div>
+  ${recs.map(r=>{
+    const tq=r.machines.reduce((s,m)=>s+m.total,0);
+    const tc=r.machines.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+    const rate=tc>0?+(tq/tc*100).toFixed(1):null;
+    return`<div class="rec-item">
+      <div>
+        <div class="rec-date">${shiftLabel(r.shift)} <span style="font-size:10px;color:var(--tx3);margin-left:6px">${r.submittedBy||''}</span></div>
+        <div class="rec-meta">${r.machines.length}台　${tq}顆${r.lowRateReason?' ⚠ '+r.lowRateReason.slice(0,30):''}${r.note?' | '+r.note:''}</div>
+      </div>${rb(rate)}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ═══════════════════ ENTRY ═══════════════════
+let mc=0;
+function addMachineEntry(preset){
+  mc++;const id=mc;
+  const container=document.getElementById('e-machines');
+  const div=document.createElement('div');
+  div.className='me';div.id='me-'+id;
+  div.innerHTML=`
+    <div class="meh" onclick="toggleMe(${id})">
+      <div class="mename"><span class="chev open" id="chev-${id}">▶</span><span id="mn-${id}">機台 ${id}</span></div>
+      <button class="btn btn-sm btn-d" onclick="event.stopPropagation();document.getElementById('me-${id}').remove()">移除</button>
+    </div>
+    <div class="mebody open" id="meb-${id}">
+      <div class="fr r4" style="margin-bottom:8px">
+        <div class="fd"><label>機台類型</label>
+          <select id="m${id}_type" onchange="onTypeChange(${id})">
+            <option value="lathe">走心式車床</option><option value="mill">CNC 銑床</option>
+          </select>
+        </div>
+        <div class="fd"><label>機台號</label>
+          <select id="m${id}_num" onchange="recalc(${id})">
+            ${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n} 號機</option>`).join('')}
+          </select>
+        </div>
+        <div class="fd"><label>選擇產品</label>
+          <select id="m${id}_pid" onchange="onProductSelect(${id})">
+            <option value="">— 請選擇產品 —</option>
+          </select>
+        </div>
+        <div class="fd"><label>產品品名</label>
+          <input id="m${id}_prod" placeholder="（從產品選單自動帶入）" readonly style="background:var(--sf3);color:var(--tx2)">
+        </div>
+      </div>
+      <div class="fr r4" style="margin-bottom:8px">
+        <div class="fd"><label>加工時間（分）</label><input type="number" id="m${id}_cm" placeholder="2" min="0" oninput="recalc(${id})" readonly style="background:var(--sf3)"></div>
+        <div class="fd"><label>加工時間（秒）</label><input type="number" id="m${id}_cs" placeholder="28" min="0" max="59" oninput="recalc(${id})" readonly style="background:var(--sf3)"></div>
+        <div class="fd" id="m${id}_mold_wrap" style="display:none"><label>一模幾顆</label><input type="number" id="m${id}_mold" value="1" min="1" readonly style="background:var(--sf3)"></div>
+        <div class="fd"><label>換刀記錄（選填）</label><input id="m${id}_toolnote" placeholder="例：T02換刀片"></div>
+      </div>
+      <div class="sgrid">
+        <div class="sblock">
+          <div class="slbl"><div class="sdot" style="background:var(--am)"></div>早班</div>
+          <div class="fr r2">
+            <div class="fd"><label>開機人員</label><input id="m${id}_dop" placeholder="姓名"></div>
+            <div class="fd"><label>停機原因</label>
+              <select id="m${id}_ds"><option value="">正常生產</option><option>本班停機</option><option>換模停機</option><option>待料停機</option><option>故障停機</option></select>
+            </div>
+          </div>
+          <div class="fr r2">
+            <div class="fd"><label>早班產量（顆）</label><input type="number" id="m${id}_dq" value="0" min="0" oninput="recalc(${id})"></div>
+            <div class="fd"><label>不良品（顆）</label><input type="number" id="m${id}_dng" value="0" min="0"></div>
+          </div>
+          <div class="rp" id="m${id}_drp"></div>
+        </div>
+        <div class="sblock">
+          <div class="slbl"><div class="sdot" style="background:var(--bl)"></div>晚班</div>
+          <div class="fr r2">
+            <div class="fd"><label>開機人員</label><input id="m${id}_nop" placeholder="姓名"></div>
+            <div class="fd"><label>停機原因</label>
+              <select id="m${id}_ns"><option value="">正常生產</option><option>本班停機</option><option>換模停機</option><option>待料停機</option><option>故障停機</option></select>
+            </div>
+          </div>
+          <div class="fr r2">
+            <div class="fd"><label>晚班產量（顆）</label><input type="number" id="m${id}_nq" value="0" min="0" oninput="recalc(${id})"></div>
+            <div class="fd"><label>不良品（顆）</label><input type="number" id="m${id}_nng" value="0" min="0"></div>
+          </div>
+          <div class="rp" id="m${id}_nrp"></div>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  populateProductSelect(id, gv('m'+id+'_type'));
+  if(preset) fillPreset(id,preset);
+}
+
+function onTypeChange(id){
+  const type=gv('m'+id+'_type');
+  // Update machine num options
+  const maxNum=type==='lathe'?5:8;
+  const sel=document.getElementById('m'+id+'_num');
+  sel.innerHTML=[...Array(maxNum)].map((_,i)=>`<option value="${i+1}">${i+1} 號機</option>`).join('');
+  populateProductSelect(id,type);
+  recalc(id);
+}
+
+function populateProductSelect(id,type){
+  const db=loadDB();
+  const prods=(db.products||[]).filter(p=>p.machineType===type);
+  const sel=document.getElementById('m'+id+'_pid');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— 請選擇產品 —</option>'+prods.map(p=>`<option value="${p.id}">${p.code} ${p.name}</option>`).join('');
+}
+
+function onProductSelect(id){
+  const pid=gv('m'+id+'_pid');
+  if(!pid){return;}
+  const db=loadDB();
+  const p=db.products.find(x=>String(x.id)===pid);
+  if(!p)return;
+  const s=(k,v)=>{const e=document.getElementById(k);if(e){e.value=v;e.style.background='';}};
+  s('m'+id+'_prod',p.name);
+  s('m'+id+'_cm',p.cm||0);
+  s('m'+id+'_cs',p.cs||0);
+  const mw=document.getElementById('m'+id+'_mold_wrap');
+  if(p.machineType==='mill'){
+    if(mw)mw.style.display='';
+    s('m'+id+'_mold',p.mold||1);
+  } else {
+    if(mw)mw.style.display='none';
+  }
+  // Update machine name
+  const numEl=document.getElementById('m'+id+'_num');
+  const num=numEl?numEl.value:'?';
+  const typeEl=document.getElementById('m'+id+'_type');
+  const typeLbl=typeEl&&typeEl.value==='lathe'?'走心':'銑床';
+  document.getElementById('mn-'+id).textContent=`${typeLbl} ${num}號機 — ${p.name}`;
+  recalc(id);
+}
+
+function toggleMe(id){document.getElementById('meb-'+id).classList.toggle('open');document.getElementById('chev-'+id).classList.toggle('open');}
+
+function recalc(id){
+  const type=gv('m'+id+'_type');
+  const num=parseInt(gv('m'+id+'_num'))||1;
+  const s=getMSet(type,num);
+  const cm=gn('m'+id+'_cm'),cs=gn('m'+id+'_cs');
+  const dq=gn('m'+id+'_dq'),nq=gn('m'+id+'_nq');
+
+  const dCap=calcMaxCap(s.dayHours,cm,cs);
+  const nCap=calcMaxCap(s.nightHours,cm,cs);
+  const dRate=dCap?calcRate(dq,dCap):null;
+  const nRate=nCap?calcRate(nq,nCap):null;
+
+  showRatePreview('m'+id+'_drp',dq,dCap,dRate,s.dayHours,cm,cs,s.dayThreshold);
+  showRatePreview('m'+id+'_nrp',nq,nCap,nRate,s.nightHours,cm,cs,s.nightThreshold);
+}
+
+function showRatePreview(elId,qty,cap,rate,hours,cm,cs,thr){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!cm&&!cs){el.classList.remove('show');return;}
+  el.classList.add('show');
+  const c=rate===null?'var(--bl)':rate>=100?'var(--gn)':rate>=thr?'var(--bl)':'var(--rd)';
+  const warn=rate!==null&&rate<thr?`<span style="color:var(--rd);font-size:11px">⚠ 低於${thr}%</span>`:'';
+  el.innerHTML=`<span class="rpi">工時 <b>${hours}h</b></span>
+    <span class="rpi">理論最大 <b>${cap||'—'}顆</b></span>
+    <span class="rpi">實際 <b>${qty}顆</b></span>
+    <span class="rpi">稼動率 <b style="color:${c};font-size:14px;font-weight:700">${rate!==null?rate+'%':'—'}</b></span>
+    ${warn}`;
+}
+
+function clearEntryForm(){
+  document.getElementById('e-machines').innerHTML='';mc=0;
+  document.getElementById('e-note').value='';
+  document.getElementById('e-date').value=todayStr();
+  addMachineEntry();setPDFst('','');
+}
+
+function collectMachines(){
+  const els=document.querySelectorAll('.me[id^="me-"]');
+  return Array.from(els).map(el=>{
+    const id=el.id.replace('me-','');
+    const type=gv('m'+id+'_type'),num=parseInt(gv('m'+id+'_num'))||1;
+    const s=getMSet(type,num);
+    const cm=gn('m'+id+'_cm'),cs=gn('m'+id+'_cs');
+    const dq=gn('m'+id+'_dq'),nq=gn('m'+id+'_nq');
+    const dng=gn('m'+id+'_dng'),nng=gn('m'+id+'_nng');
+    const total=dq+nq,tng=dng+nng;
+    const mold=type==='mill'?(gn('m'+id+'_mold')||1):1;
+    const dCap=calcMaxCap(s.dayHours,cm,cs),nCap=calcMaxCap(s.nightHours,cm,cs);
+    const dRate=dCap?calcRate(dq,dCap):null,nRate=nCap?calcRate(nq,nCap):null;
+    const totalCap=(dCap||0)+(nCap||0);
+    const overallRate=totalCap?calcRate(total,totalCap):null;
+    return{
+      machineType:type,machineNum:num,
+      pid:gv('m'+id+'_pid'),prod:gv('m'+id+'_prod'),
+      cm,cs,mold,dq,nq,total,tng,
+      dng,nng,molds:Math.round(total/mold),
+      dop:gv('m'+id+'_dop'),nop:gv('m'+id+'_nop'),
+      ds:gv('m'+id+'_ds'),ns:gv('m'+id+'_ns'),
+      toolnote:gv('m'+id+'_toolnote'),
+      dCap,nCap,totalMaxCap:totalCap,
+      dRate,nRate,overallRate,
+      dThreshold:s.dayThreshold,nThreshold:s.nightThreshold,
+      yr:total>0?+((total-tng)/total*100).toFixed(1):100
+    };
+  });
+}
+
+function fillPreset(id,p){
+  const s=(k,v)=>{const e=document.getElementById(k);if(e&&v!=null)e.value=v;};
+  if(p.machineType)s('m'+id+'_type',p.machineType);
+  onTypeChange(id);
+  setTimeout(()=>{
+    s('m'+id+'_num',p.machineNum||p.num||1);
+    s('m'+id+'_dop',p.dop);s('m'+id+'_nop',p.nop);
+    s('m'+id+'_ds',p.ds);s('m'+id+'_ns',p.ns);
+    s('m'+id+'_dq',p.dq||0);s('m'+id+'_nq',p.nq||0);
+    s('m'+id+'_dng',p.dng||0);s('m'+id+'_nng',p.nng||0);
+    if(p.cm){
+      const cmEl=document.getElementById('m'+id+'_cm');if(cmEl){cmEl.value=p.cm;cmEl.style.background='';}
+      const csEl=document.getElementById('m'+id+'_cs');if(csEl){csEl.value=p.cs||0;csEl.style.background='';}
+    }
+    recalc(id);
+  },50);
+}
+
+// ═══════════════════ SAVE / MODAL ═══════════════════
+let _ps=null;
+function trySave(){
+  if(CU.role==='mgr'){toast('主管無輸入權限');return;}
+  const date=gv('e-date');if(!date){toast('請填寫日期');return;}
+  const machines=collectMachines();if(!machines.length){toast('請新增至少一台機台');return;}
+  const low=[];
+  machines.forEach(m=>{
+    if(m.dRate!==null&&m.dRate<m.dThreshold)low.push({label:`${m.machineType==='lathe'?'走心':'銑床'} ${m.machineNum}號機 ${m.prod} — 早班`,rate:m.dRate,thr:m.dThreshold});
+    if(m.nRate!==null&&m.nRate<m.nThreshold)low.push({label:`${m.machineType==='lathe'?'走心':'銑床'} ${m.machineNum}號機 ${m.prod} — 晚班`,rate:m.nRate,thr:m.nThreshold});
+  });
+  _ps={date,machines,shift:gv('e-shift'),note:gv('e-note')};
+  if(low.length){
+    document.getElementById('modal-warnings').innerHTML=low.map(i=>`<div class="mwarn"><p><strong>${i.label}</strong><br>稼動率 <strong style="color:var(--rd)">${i.rate}%</strong>，低於閾值 ${i.thr}%</p></div>`).join('');
+    document.getElementById('modal-reason').value='';
+    document.getElementById('rate-modal').style.display='flex';
+  } else doSave('');
+}
+function closeModal(){document.getElementById('rate-modal').style.display='none';_ps=null;}
+function confirmSave(){
+  const r=document.getElementById('modal-reason').value.trim();
+  if(!r){toast('請填寫稼動率低下原因');return;}
+  document.getElementById('rate-modal').style.display='none';doSave(r);
+}
+function doSave(lowRateReason){
+  if(!_ps)return;
+  const{date,machines,shift,note}=_ps;_ps=null;
+
+  // Deduct tool usage
+  const db=loadDB();
+  machines.forEach(m=>{
+    if(!m.pid||!m.total)return;
+    const p=db.products.find(x=>String(x.id)===m.pid);
+    if(!p||!p.tools)return;
+    p.tools.forEach(t=>{
+      const used=Math.floor(m.total*t.unitConsume);
+      if(t.currentFaces==null)t.currentFaces=t.faces;
+      t.currentFaces=Math.max(0,t.currentFaces-used);
+    });
+  });
+
+  const rec={id:Date.now(),date,shift,note,machines,lowRateReason,
+    submittedBy:CU.name,submittedAt:new Date().toISOString(),
+    status:CU.role==='admin'?'approved':'pending'};
+  if(rec.status==='approved'){db.records.push(rec);toast('✓ 記錄已儲存：'+date);}
+  else{db.pending.push(rec);toast('✓ 已提交審核：'+date);}
+  saveDB(db);updatePdot();clearEntryForm();
+}
+
+// ═══════════════════ PDF ═══════════════════
+function dragOver(e){e.preventDefault();document.getElementById('pdf-drop').classList.add('drag');}
+function doDrop(e){e.preventDefault();document.getElementById('pdf-drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')processPDF(f);else toast('請上傳 PDF 檔案');}
+function handlePDF(e){const f=e.target.files[0];if(f)processPDF(f);e.target.value='';}
+function setPDFst(type,msg){const el=document.getElementById('pdf-st');el.className='pdf-st'+(type?' '+type:'');el.innerHTML=msg;}
+
+async function processPDF(file){
+  setPDFst('loading','<span class="spin"></span>AI 正在解析 PDF...');
+  const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error(''));r.readAsDataURL(file);});
+  const prompt=`你是工廠生產管理系統的資料解析助手。請讀取這份加工機交班報表 PDF，提取所有機台資料。
+注意：日期轉為 YYYY-MM-DD（民國115年=西元2026年）；機台類型判斷：走心車床=lathe，銑床=mill；數字欄位空白填0；只回傳JSON，不要說明文字。
+格式：{"date":"2026-04-21","machines":[{"machineType":"mill","machineNum":"2","prod":"LRT-2","cm":11,"cs":0,"dop":"阿蝶","nop":"阿文","dq":51,"nq":129,"ds":"","ns":"","dng":0,"nng":0}]}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:prompt}]}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content.map(c=>c.text||'').join('');
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(parsed.date)document.getElementById('e-date').value=parsed.date;
+    document.getElementById('e-machines').innerHTML='';mc=0;
+    if(parsed.machines&&parsed.machines.length){
+      parsed.machines.forEach(m=>addMachineEntry(m));
+      setPDFst('ok',`✓ 解析 ${parsed.machines.length} 台機台，稼動率已自動計算，請確認後儲存`);
+    }else{setPDFst('err','✗ 未能解析到機台資料');addMachineEntry();}
+  }catch(err){setPDFst('err','✗ 解析失敗：'+err.message);if(!document.querySelector('.me'))addMachineEntry();}
+}
+
+// ═══════════════════ RECORDS ═══════════════════
+function shiftLabel(s){return s==='day'?'早班':s==='night'?'晚班':'全天';}
+function updatePdot(){const db=loadDB();const d=document.getElementById('pdot');if(d)d.style.display=db.pending.length>0?'inline-block':'none';}
+
+function renderRecords(){
+  const db=loadDB();
+  const fm=gv('rec-month'),ft=gv('rec-type');
+  const months=[...new Set(db.records.map(r=>r.date.slice(0,7)))].sort().reverse();
+  const sel=document.getElementById('rec-month');const cur=sel.value;
+  sel.innerHTML='<option value="">所有月份</option>'+months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+  let recs=db.records.filter(r=>(!fm||r.date.startsWith(fm))&&(!ft||r.machines.some(m=>m.machineType===ft)));
+  recs.sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('records-list');
+  if(!recs.length){el.innerHTML=`<div class="empty"><span class="ei">📋</span><p>目前沒有記錄</p></div>`;return;}
+  el.innerHTML=recs.map(r=>{
+    const tq=r.machines.reduce((s,m)=>s+m.total,0);
+    const tc=r.machines.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+    const rate=tc>0?+(tq/tc*100).toFixed(1):null;
+    return`<div class="rec-item">
+      <div>
+        <div class="rec-date">${r.date} <span style="font-size:10px;color:var(--tx3);margin-left:6px">${shiftLabel(r.shift)}</span></div>
+        <div class="rec-meta">${r.machines.length}台　${tq}顆　${r.submittedBy||''}${r.lowRateReason?' ⚠ '+r.lowRateReason.slice(0,25):''}${r.note?' | '+r.note:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        ${rb(rate)}
+        ${CU.role==='admin'?`<button class="btn btn-sm btn-d" onclick="deleteRecord(${r.id})">刪除</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function deleteRecord(id){if(!confirm('確定要刪除？'))return;const db=loadDB();db.records=db.records.filter(r=>r.id!==id);saveDB(db);renderRecords();toast('已刪除');}
+
+// ═══════════════════ PENDING ═══════════════════
+function renderPending(){
+  const db=loadDB();const el=document.getElementById('pending-list');
+  if(!db.pending.length){el.innerHTML=`<div class="empty"><span class="ei">✅</span><p>目前沒有待審核記錄</p></div>`;return;}
+  const can=CU.role==='admin'||CU.role==='mgr';
+  el.innerHTML=db.pending.map(r=>{
+    const tq=r.machines.reduce((s,m)=>s+m.total,0);
+    const tc=r.machines.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+    const rate=tc>0?+(tq/tc*100).toFixed(1):null;
+    return`<div class="rec-item">
+      <div>
+        <div class="rec-date">${r.date} <span style="font-size:10px;color:var(--am);margin-left:6px">待審核</span></div>
+        <div class="rec-meta">${r.machines.length}台　${tq}顆　${r.submittedBy||''}　${r.submittedAt?r.submittedAt.slice(0,16).replace('T',' '):''}${r.lowRateReason?' ⚠ '+r.lowRateReason.slice(0,20):''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        ${rb(rate)}
+        ${can?`<button class="btn btn-sm btn-p" onclick="approveR(${r.id})">核准</button><button class="btn btn-sm btn-d" onclick="rejectR(${r.id})">退回</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function approveR(id){const db=loadDB();const i=db.pending.findIndex(r=>r.id===id);if(i<0)return;const r=db.pending.splice(i,1)[0];r.status='approved';r.approvedBy=CU.name;r.approvedAt=new Date().toISOString();db.records.push(r);saveDB(db);renderPending();updatePdot();toast('✓ 已核准：'+r.date);}
+function rejectR(id){if(!confirm('確定要退回？'))return;const db=loadDB();db.pending=db.pending.filter(r=>r.id!==id);saveDB(db);renderPending();updatePdot();toast('已退回');}
+
+// ═══════════════════ PRODUCTS ═══════════════════
+let _editProdId=null;
+let _prodFilter='all';
+
+function filterProducts(type,el){
+  _prodFilter=type;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderProducts(type);
+}
+
+function renderProducts(type){
+  const db=loadDB();
+  const prods=(db.products||[]).filter(p=>type==='all'||p.machineType===type);
+  const el=document.getElementById('products-list');
+  if(!prods.length){el.innerHTML=`<div class="empty"><span class="ei">📦</span><p>尚無產品，請點右上角「新增產品」</p></div>`;return;}
+  el.innerHTML=prods.map(p=>{
+    const toolCost=((p.tools||[]).reduce((s,t)=>s+t.unitConsume*t.price,0)).toFixed(4);
+    const cycleStr=p.cm+'分'+(p.cs||0)+'秒';
+    return`<div class="prod-card">
+      <div class="prod-card-header">
+        <div>
+          <div class="prod-name">${p.name} <span style="font-weight:400;color:var(--tx3);font-size:12px">${p.code||''}</span></div>
+          <div style="margin-top:4px;display:flex;gap:6px;align-items:center">
+            ${p.machineType==='lathe'?'<span class="type-lathe">走心式車床</span>':'<span class="type-mill">CNC 銑床</span>'}
+            <span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">⏱ ${cycleStr}${p.machineType==='mill'?' | 一模'+p.mold+'顆':''} | 刀具成本/顆 $${toolCost}</span>
+          </div>
+        </div>
+        <div class="brow">
+          <button class="btn btn-sm" onclick="editProduct(${p.id})">編輯</button>
+          <button class="btn btn-sm btn-d" onclick="deleteProduct(${p.id})">刪除</button>
+        </div>
+      </div>
+      ${(p.tools||[]).length?`<div class="twrap"><table>
+        <thead><tr><th>刀號</th><th>品名</th><th>產編</th><th>壽命</th><th>剩餘</th><th>狀態</th><th>價格</th><th>單件消耗</th><th>消耗成本</th></tr></thead>
+        <tbody>${(p.tools||[]).map(t=>{
+          const rem=t.currentFaces!=null?t.currentFaces:t.faces;
+          const pct=t.faces>0?rem/t.faces*100:0;
+          const cls=pct<=15?'br2':pct<=30?'bw2':'bg2';
+          return`<tr>
+            <td>${t.num}</td><td class="ts">${t.name}</td><td>${t.code||'—'}</td>
+            <td>${t.faces}</td><td><strong>${rem}</strong></td>
+            <td><span class="badge ${cls}">${pct<=15?'⚠ 低':'正常'}</span></td>
+            <td>$${t.price}</td><td>${t.unitConsume}</td>
+            <td style="color:var(--am)">$${(t.unitConsume*t.price).toFixed(3)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`:'<div style="font-size:11px;color:var(--tx3);font-family:var(--mono);margin-top:.5rem">尚未設定刀具</div>'}
+    </div>`;
+  }).join('');
+}
+
+function showProductModal(id){
+  _editProdId=id||null;
+  document.getElementById('pm-title').textContent=id?'編輯產品':'新增產品';
+  document.getElementById('pm-tools').innerHTML='';
+  if(id){
+    const p=loadDB().products.find(x=>x.id===id);
+    if(!p)return;
+    document.getElementById('pm-code').value=p.code||'';
+    document.getElementById('pm-name').value=p.name||'';
+    document.getElementById('pm-type').value=p.machineType||'lathe';
+    document.getElementById('pm-cm').value=p.cm||'';
+    document.getElementById('pm-cs').value=p.cs||0;
+    document.getElementById('pm-mold').value=p.mold||1;
+    document.getElementById('pm-model').value=p.model||'';
+    (p.tools||[]).forEach(t=>addToolRow(t));
+    onProdTypeChange();
+  } else {
+    ['pm-code','pm-name','pm-cm','pm-cs','pm-model'].forEach(k=>document.getElementById(k).value='');
+    document.getElementById('pm-type').value='lathe';
+    document.getElementById('pm-mold').value=1;
+    onProdTypeChange();
+  }
+  document.getElementById('product-modal').style.display='flex';
+}
+function editProduct(id){showProductModal(id);}
+function deleteProduct(id){
+  if(!confirm('確定要刪除此產品？'))return;
+  const db=loadDB();db.products=db.products.filter(p=>p.id!==id);saveDB(db);
+  renderProducts(_prodFilter);toast('已刪除產品');
+}
+function closeProdModal(){document.getElementById('product-modal').style.display='none';_editProdId=null;}
+function onProdTypeChange(){
+  const isMill=gv('pm-type')==='mill';
+  document.getElementById('pm-mold-wrap').style.display=isMill?'':'none';
+}
+
+let _tc=0;
+function addToolRow(t){
+  _tc++;const tid=_tc;
+  const row=document.createElement('div');
+  row.className='tool-grid-row';row.id='tr-'+tid;
+  row.innerHTML=`
+    <input id="tr${tid}_num" placeholder="T01" value="${t?t.num||'':''}">
+    <input id="tr${tid}_name" placeholder="刀具品名" value="${t?t.name||'':''}">
+    <input id="tr${tid}_code" placeholder="產編" value="${t?t.code||'':''}">
+    <input type="number" id="tr${tid}_faces" placeholder="6000" value="${t?t.faces||'':''}" min="1">
+    <input type="number" id="tr${tid}_cf" placeholder="目前面數" value="${t&&t.currentFaces!=null?t.currentFaces:t?t.faces||'':''}" min="0">
+    <input type="number" id="tr${tid}_price" placeholder="100" value="${t?t.price||'':''}" min="0">
+    <input type="number" id="tr${tid}_uc" placeholder="0.006" value="${t?t.unitConsume||'':''}" step="0.001" min="0">
+    <button class="btn btn-sm btn-d" onclick="document.getElementById('tr-${tid}').remove()">✕</button>`;
+  document.getElementById('pm-tools').appendChild(row);
+}
+
+function saveProduct(){
+  const name=gv('pm-name').trim();if(!name){toast('請填寫品名');return;}
+  const tools=[];
+  document.querySelectorAll('.tool-grid-row[id^="tr-"]').forEach(row=>{
+    const tid=row.id.replace('tr-','');
+    const faces=parseFloat(gv('tr'+tid+'_faces'))||0;
+    const cfVal=gv('tr'+tid+'_cf');
+    const cf=cfVal!==''?parseFloat(cfVal):faces;
+    tools.push({
+      num:gv('tr'+tid+'_num'),name:gv('tr'+tid+'_name'),code:gv('tr'+tid+'_code'),
+      faces,currentFaces:cf,
+      price:parseFloat(gv('tr'+tid+'_price'))||0,
+      unitConsume:parseFloat(gv('tr'+tid+'_uc'))||0
+    });
+  });
+  const db=loadDB();
+  if(!db.products)db.products=[];
+  const prod={
+    id:_editProdId||Date.now(),
+    code:gv('pm-code'),name,machineType:gv('pm-type'),
+    cm:gn('pm-cm'),cs:gn('pm-cs'),mold:gn('pm-mold')||1,
+    model:gv('pm-model'),tools
+  };
+  if(_editProdId){const i=db.products.findIndex(p=>p.id===_editProdId);if(i>=0)db.products[i]=prod;else db.products.push(prod);}
+  else db.products.push(prod);
+  saveDB(db);closeProdModal();renderProducts(_prodFilter);toast('✓ 產品已儲存：'+name);
+}
+
+// ═══════════════════ TOOLS PAGE ═══════════════════
+function renderTools(){
+  const db=loadDB();
+  const el=document.getElementById('tools-content');
+  const prods=(db.products||[]).filter(p=>(p.tools||[]).length>0);
+  if(!prods.length){el.innerHTML=`<div class="card"><div class="empty"><span class="ei">🔧</span><p>尚無產品刀具資料</p></div></div>`;return;}
+  el.innerHTML=prods.map(p=>{
+    const warns=(p.tools||[]).filter(t=>{const rem=t.currentFaces!=null?t.currentFaces:t.faces;return rem/t.faces<=0.15;});
+    return`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <div>
+          <span style="font-size:14px;font-weight:500">${p.name}</span>
+          <span style="font-size:11px;color:var(--tx3);margin-left:8px;font-family:var(--mono)">${p.code||''}</span>
+          <span style="margin-left:8px">${p.machineType==='lathe'?'<span class="type-lathe">走心</span>':'<span class="type-mill">銑床</span>'}</span>
+        </div>
+        ${warns.length?`<span class="badge br2">⚠ ${warns.length}支刀具低壽命</span>`:'<span class="badge bg2">刀具正常</span>'}
+      </div>
+      <div class="twrap"><table>
+        <thead><tr><th>刀號</th><th>品名</th><th>產編</th><th>壽命</th><th>剩餘面數</th><th>使用率</th><th>價格</th><th>單件消耗</th><th>成本/顆</th></tr></thead>
+        <tbody>${(p.tools||[]).map(t=>{
+          const rem=t.currentFaces!=null?t.currentFaces:t.faces;
+          const pct=t.faces>0?+(rem/t.faces*100).toFixed(1):0;
+          const bc=pct<=15?'var(--rd)':pct<=30?'var(--am)':'var(--ac)';
+          return`<tr>
+            <td>${t.num}</td><td class="ts">${t.name}</td><td>${t.code||'—'}</td>
+            <td>${t.faces}</td>
+            <td><strong style="color:${bc}">${rem}</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="bar-track" style="width:80px"><div class="bar-fill" style="width:${Math.min(pct,100)}%;background:${bc}"></div></div>
+                <span style="font-size:11px;color:${bc}">${pct}%</span>
+              </div>
+            </td>
+            <td>$${t.price}</td><td>${t.unitConsume}</td><td style="color:var(--am)">$${(t.unitConsume*t.price).toFixed(4)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════ SUMMARY ═══════════════════
+function buildSummary(records,typeFilter){
+  const bm={};
+  records.forEach(r=>r.machines.filter(m=>!typeFilter||m.machineType===typeFilter).forEach(m=>{
+    const k=m.machineType+'_'+m.machineNum;
+    if(!bm[k])bm[k]={type:m.machineType,num:m.machineNum,prod:m.prod,tq:0,tc:0,dq:0,nq:0,tng:0,days:0};
+    bm[k].tq+=m.total;bm[k].tc+=(m.totalMaxCap||0);bm[k].dq+=m.dq;bm[k].nq+=m.nq;bm[k].tng+=m.tng||0;bm[k].days++;
+  }));
+  const ms=Object.values(bm).sort((a,b)=>a.type===b.type?a.num-b.num:a.type.localeCompare(b.type)).map(m=>({
+    ...m,rate:m.tc>0?+(m.tq/m.tc*100).toFixed(1):null,yr:m.tq>0?+((m.tq-m.tng)/m.tq*100).toFixed(1):100
+  }));
+  const tq=ms.reduce((s,m)=>s+m.tq,0),tc=ms.reduce((s,m)=>s+m.tc,0),tn=ms.reduce((s,m)=>s+m.tng,0);
+  return{machines:ms,tq,tc,tn,overallRate:tc>0?+(tq/tc*100).toFixed(1):null,overallYr:tq>0?+((tq-tn)/tq*100).toFixed(1):100,days:records.length};
+}
+
+function renderSummaryCards(s){
+  return`<div class="mrow">
+    <div class="metric"><div class="mlbl">整體稼動率</div><div class="mval ${rcls(s.overallRate)}">${s.overallRate!==null?s.overallRate+'%':'—'}</div><div class="msub">理論最大 ${s.tc.toLocaleString()} 顆</div></div>
+    <div class="metric"><div class="mlbl">總產量</div><div class="mval">${s.tq.toLocaleString()}</div><div class="msub">共 ${s.days} 天</div></div>
+    <div class="metric"><div class="mlbl">良品率</div><div class="mval ${rcls(s.overallYr)}">${s.overallYr}%</div><div class="msub">不良 ${s.tn} 顆</div></div>
+    <div class="metric"><div class="mlbl">機台數</div><div class="mval">${s.machines.length}</div></div>
+  </div>`;
+}
+
+function renderSummaryTable(s){
+  if(!s.machines.length)return'';
+  const maxR=Math.max(...s.machines.map(m=>m.rate||0),1);
+  return`<div class="card"><div class="ct">機台明細</div><div class="twrap"><table>
+    <thead><tr><th>類型</th><th>機台</th><th>產品</th><th>天數</th><th>理論最大</th><th>總產量</th><th>稼動率</th><th>良品率</th><th>不良</th><th>早班</th><th>晚班</th></tr></thead>
+    <tbody>${s.machines.map(m=>`<tr>
+      <td>${m.type==='lathe'?'<span class="type-lathe">走心</span>':'<span class="type-mill">銑床</span>'}</td>
+      <td class="ts">${m.num}號機</td><td class="ts">${m.prod||'—'}</td><td>${m.days}</td>
+      <td>${m.tc.toLocaleString()}</td><td><strong>${m.tq.toLocaleString()}</strong></td>
+      <td><div style="display:flex;align-items:center;gap:5px"><div class="bar-track" style="width:60px"><div class="bar-fill" style="width:${m.rate?Math.min(m.rate/maxR*100,100):0}%;background:${rateColor(m.rate)}"></div></div>${rb(m.rate)}</div></td>
+      <td>${rb(m.yr)}</td><td>${m.tng}</td><td>${m.dq.toLocaleString()}</td><td>${m.nq.toLocaleString()}</td>
+    </tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function renderDailyTable(records){
+  return`<div class="card"><div class="ct">每日明細</div><div class="twrap"><table>
+    <thead><tr><th>日期</th><th>班別</th><th>機台</th><th>理論最大</th><th>產量</th><th>稼動率</th><th>低稼動原因</th></tr></thead>
+    <tbody>${[...records].sort((a,b)=>a.date.localeCompare(b.date)).map(r=>{
+      const tq=r.machines.reduce((s,m)=>s+m.total,0),tc=r.machines.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+      const rate=tc>0?+(tq/tc*100).toFixed(1):null;
+      return`<tr><td>${r.date}</td><td class="ts">${shiftLabel(r.shift)}</td><td>${r.machines.length}</td><td>${tc.toLocaleString()}</td><td>${tq.toLocaleString()}</td><td>${rb(rate)}</td><td class="ts" style="color:var(--tx2);max-width:180px;white-space:normal;font-size:11px">${r.lowRateReason||'—'}</td></tr>`;
+    }).join('')}</tbody></table></div></div>`;
+}
+
+// ═══════════════════ WEEKLY ═══════════════════
+function getWeekRange(d){const date=new Date(d),day=date.getDay(),mon=new Date(date);mon.setDate(date.getDate()-(day===0?6:day-1));const sun=new Date(mon);sun.setDate(mon.getDate()+6);return{mon:mon.toISOString().split('T')[0],sun:sun.toISOString().split('T')[0]};}
+function renderWeekly(){
+  const dv=gv('week-date')||todayStr();const{mon,sun}=getWeekRange(dv);const db=loadDB();
+  const recs=db.records.filter(r=>r.date>=mon&&r.date<=sun);
+  const el=document.getElementById('weekly-content');
+  if(!recs.length){el.innerHTML=`<div class="card"><div class="empty"><span class="ei">📅</span><p>該週（${mon}～${sun}）無資料</p></div></div>`;return;}
+  const s=buildSummary(recs);
+  el.innerHTML=`<div style="font-family:var(--mono);font-size:11px;color:var(--tx2);margin-bottom:.85rem">📅 ${mon} ～ ${sun}</div>${renderSummaryCards(s)}${renderSummaryTable(s)}${renderDailyTable(recs)}`;
+}
+
+// ═══════════════════ MONTHLY ═══════════════════
+function initMonthSelects(){
+  const now=new Date();const db=loadDB();
+  const years=[...new Set([...db.records.map(r=>r.date.slice(0,4)),String(now.getFullYear())])].sort().reverse();
+  const ys=document.getElementById('m-year');const ms=document.getElementById('m-month');
+  ys.innerHTML=years.map(y=>`<option value="${y}">${y} 年</option>`).join('');ys.value=String(now.getFullYear());
+  ms.innerHTML=Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1} 月</option>`).join('');ms.value=String(now.getMonth()+1).padStart(2,'0');
+}
+function renderMonthly(){
+  const y=gv('m-year'),m=gv('m-month');if(!y||!m)return;
+  const db=loadDB();const recs=db.records.filter(r=>r.date.startsWith(y+'-'+m));
+  const el=document.getElementById('monthly-content');
+  if(!recs.length){el.innerHTML=`<div class="card"><div class="empty"><span class="ei">📈</span><p>${y}年${parseInt(m)}月 無資料</p></div></div>`;return;}
+  const s=buildSummary(recs);
+  el.innerHTML=`<div style="font-family:var(--mono);font-size:11px;color:var(--tx2);margin-bottom:.85rem">📅 ${y}年${parseInt(m)}月 — ${recs.length}天記錄</div>${renderSummaryCards(s)}${renderSummaryTable(s)}${renderDailyTable(recs)}`;
+}
+
+// ═══════════════════ SETTINGS ═══════════════════
+let _settingsType='lathe';
+function renderSettings(type,tabEl){
+  _settingsType=type||'lathe';
+  document.querySelectorAll('#page-settings .tab').forEach(t=>t.classList.remove('active'));
+  if(tabEl)tabEl.classList.add('active');
+  else{const t=document.getElementById('tab-'+_settingsType);if(t)t.classList.add('active');}
+  const db=loadDB();const count=_settingsType==='lathe'?5:8;
+  const el=document.getElementById('settings-rows');
+  let html='';
+  for(let i=1;i<=count;i++){
+    const s=db.machineSettings[_settingsType+'_'+i]||{dayHours:9,nightHours:11,dayThreshold:85,nightThreshold:85};
+    html+=`<div class="set-row">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:500">${i} 號機</div>
+      <input type="number" id="ss-dh-${i}" value="${s.dayHours}" min="1" max="24" step="0.5">
+      <input type="number" id="ss-nh-${i}" value="${s.nightHours}" min="1" max="24" step="0.5">
+      <input type="number" id="ss-dt-${i}" value="${s.dayThreshold}" min="0" max="100">
+      <input type="number" id="ss-nt-${i}" value="${s.nightThreshold}" min="0" max="100">
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+function saveSettings(){
+  const db=loadDB();const count=_settingsType==='lathe'?5:8;
+  for(let i=1;i<=count;i++){
+    db.machineSettings[_settingsType+'_'+i]={
+      dayHours:parseFloat(document.getElementById('ss-dh-'+i).value)||9,
+      nightHours:parseFloat(document.getElementById('ss-nh-'+i).value)||11,
+      dayThreshold:parseFloat(document.getElementById('ss-dt-'+i).value)||85,
+      nightThreshold:parseFloat(document.getElementById('ss-nt-'+i).value)||85,
+    };
+  }
+  saveDB(db);toast('✓ 設定已儲存');
+}
+
+// ═══════════════════ USERS ═══════════════════
+function renderUsers(){
+  const db=loadDB();const el=document.getElementById('users-list');
+  el.innerHTML=db.users.map(u=>{
+    const rb2=u.role==='admin'?'<span style="background:var(--gbg);color:var(--ac);font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono)">管理員</span>':u.role==='mgr'?'<span style="background:var(--abg);color:var(--am);font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono)">主管</span>':'<span style="background:var(--bbg);color:var(--bl);font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono)">操作員</span>';
+    const self=u.id===CU.id;
+    return`<div class="urow"><div><div style="font-size:13px;font-weight:500">${u.name} <span style="font-family:var(--mono);font-size:11px;color:var(--tx3)">@${u.username}</span></div><div style="margin-top:4px">${rb2}</div></div><div>${!self?`<button class="btn btn-sm btn-d" onclick="delUser(${u.id})">刪除</button>`:'<span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">（本人）</span>'}</div></div>`;
+  }).join('');
+}
+function addUser(){
+  const u=gv('nu').trim(),p=gv('np').trim(),n=gv('nn').trim(),r=gv('nr');
+  if(!u||!p||!n){toast('請填寫所有欄位');return;}
+  const db=loadDB();if(db.users.find(x=>x.username===u)){toast('帳號已存在');return;}
+  db.users.push({id:Date.now(),username:u,password:p,name:n,role:r});saveDB(db);
+  ['nu','np','nn'].forEach(k=>document.getElementById(k).value='');renderUsers();toast('✓ 已新增帳號：'+n);
+}
+function delUser(id){if(!confirm('確定刪除？'))return;const db=loadDB();db.users=db.users.filter(u=>u.id!==id);saveDB(db);renderUsers();toast('已刪除帳號');}
+
+// ═══════════════════ EXPORT ═══════════════════
+function toCSV(rows){return'\uFEFF'+rows.map(r=>r.map(c=>'"'+(String(c||'').replace(/"/g,'""'))+'"').join(',')).join('\n');}
+function dl(fn,content,type='text/csv;charset=utf-8'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=fn;a.click();}
+
+function exportDashCSV(){
+  const date=gv('dash-date')||todayStr();const db=loadDB();
+  const recs=db.records.filter(r=>r.date===date);if(!recs.length){toast('今日無資料');return;}
+  const rows=[['日期','班別','機台類型','機台號','產品','理論最大','早班','晚班','總產量','稼動率','良品率','不良']];
+  recs.forEach(r=>r.machines.forEach(m=>rows.push([r.date,shiftLabel(r.shift),m.machineType==='lathe'?'走心車床':'CNC銑床',m.machineNum+'號機',m.prod,m.totalMaxCap||'',m.dq,m.nq,m.total,m.overallRate!==null?m.overallRate+'%':'—',m.yr+'%',m.tng])));
+  dl('鎧越精密_當日報表_'+date+'.csv',toCSV(rows));toast('✓ 已匯出今日報表');
+}
+function exportAllCSV(){
+  const db=loadDB();if(!db.records.length){toast('沒有資料');return;}
+  const rows=[['日期','班別','機台類型','機台號','產品','理論最大','早班','晚班','總產量','稼動率','良品率','不良','低稼動原因']];
+  db.records.sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>r.machines.forEach(m=>rows.push([r.date,shiftLabel(r.shift),m.machineType==='lathe'?'走心車床':'CNC銑床',m.machineNum+'號機',m.prod,m.totalMaxCap||'',m.dq,m.nq,m.total,m.overallRate!==null?m.overallRate+'%':'—',m.yr+'%',m.tng,r.lowRateReason||''])));
+  dl('鎧越精密_完整記錄_'+todayStr()+'.csv',toCSV(rows));toast('✓ 已匯出完整記錄');
+}
+function exportWeeklyCSV(){
+  const dv=gv('week-date')||todayStr();const{mon,sun}=getWeekRange(dv);const db=loadDB();
+  const recs=db.records.filter(r=>r.date>=mon&&r.date<=sun);if(!recs.length){toast('該週無資料');return;}
+  const s=buildSummary(recs);const rows=[['類型','機台','產品','天數','理論最大','總產量','稼動率','良品率','不良']];
+  s.machines.forEach(m=>rows.push([m.type==='lathe'?'走心車床':'CNC銑床',m.num+'號機',m.prod,m.days,m.tc,m.tq,m.rate!==null?m.rate+'%':'—',m.yr+'%',m.tng]));
+  dl(`鎧越精密_週報_${mon}_${sun}.csv`,toCSV(rows));toast('✓ 已匯出週報');
+}
+function exportMonthlyCSV(){
+  const y=gv('m-year'),m=gv('m-month');if(!y||!m)return;
+  const db=loadDB();const recs=db.records.filter(r=>r.date.startsWith(y+'-'+m));if(!recs.length){toast('該月無資料');return;}
+  const s=buildSummary(recs);const rows=[['類型','機台','產品','天數','理論最大','總產量','稼動率','良品率','不良']];
+  s.machines.forEach(m2=>rows.push([m2.type==='lathe'?'走心車床':'CNC銑床',m2.num+'號機',m2.prod,m2.days,m2.tc,m2.tq,m2.rate!==null?m2.rate+'%':'—',m2.yr+'%',m2.tng]));
+  rows.push([]);rows.push(['日期','班別','機台數','理論最大','產量','稼動率','低稼動原因']);
+  [...recs].sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
+    const tq=r.machines.reduce((s,m)=>s+m.total,0),tc=r.machines.reduce((s,m)=>s+(m.totalMaxCap||0),0);
+    rows.push([r.date,shiftLabel(r.shift),r.machines.length,tc,tq,tc>0?+(tq/tc*100).toFixed(1)+'%':'—',r.lowRateReason||'']);
+  });
+  dl(`鎧越精密_月報_${y}${m}.csv`,toCSV(rows));toast('✓ 已匯出月報');
+}
+function exportJSON(){const db=loadDB();dl('鎧越精密_備份_'+todayStr()+'.json',JSON.stringify(db,null,2),'application/json');toast('✓ 備份已匯出');}
+function importJSON(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);if(!d.records)throw new Error('');
+        if(!confirm(`匯入 ${d.records.length} 筆記錄？`))return;
+        const db=loadDB();const ids=new Set(db.records.map(r=>r.id));
+        d.records.forEach(r=>{if(!ids.has(r.id))db.records.push(r);});
+        if(d.products){const pids=new Set(db.products.map(p=>p.id));d.products.forEach(p=>{if(!pids.has(p.id))db.products.push(p);});}
+        if(d.machineSettings)Object.assign(db.machineSettings,d.machineSettings);
+        saveDB(db);toast('✓ 匯入成功');
+      }catch{toast('匯入失敗：格式不正確');}
+    };r.readAsText(f);
+  };inp.click();
+}
+</script>
+</body>
+</html>
